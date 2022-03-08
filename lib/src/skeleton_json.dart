@@ -41,7 +41,7 @@ class SkeletonJson {
     final double scale = this.scale;
     final SkeletonData skeletonData = SkeletonData('');
 
-    dynamic root;
+    Map root;
 
     if (object is String) {
       root = json.decode(object);
@@ -245,23 +245,49 @@ class SkeletonJson {
 
     // // Skins.
     if (root.containsKey('skins')) {
-      for (String skinName in root['skins'].keys) {
-        final dynamic skinMap = root['skins'][skinName];
-        final Skin skin = Skin(skinName);
-        for (String slotName in skinMap.keys) {
-          final int slotIndex = skeletonData.findSlotIndex(slotName);
-          if (slotIndex == -1) throw StateError('Slot not found: $slotName');
-          final dynamic slotMap = skinMap[slotName];
-          for (String entryName in slotMap.keys) {
-            final Attachment? attachment = readAttachment(
-                slotMap[entryName], skin, slotIndex, entryName, skeletonData);
-            if (attachment != null) {
-              skin.addAttachment(slotIndex, entryName, attachment);
+      List<dynamic> skins = root['skins'];
+
+      if(skins.isNotEmpty){
+
+        for(dynamic map in skins){
+
+          final dynamic skinMap = map['attachments'];
+          final Skin skin = Skin('attachments');
+          for (String slotName in skinMap.keys) {
+            final int slotIndex = skeletonData.findSlotIndex(slotName);
+            if (slotIndex == -1) throw StateError('Slot not found: $slotName');
+            final dynamic slotMap = skinMap[slotName];
+            for (String entryName in slotMap.keys) {
+              final Attachment? attachment = readAttachment(
+                  slotMap[entryName], skin, slotIndex, entryName, skeletonData);
+              if (attachment != null) {
+                skin.addAttachment(slotIndex, entryName, attachment);
+              }
             }
           }
+          skeletonData.skins.add(skin);
+          if (skin.name == 'attachments') skeletonData.defaultSkin = skin;
         }
-        skeletonData.skins.add(skin);
-        if (skin.name == 'default') skeletonData.defaultSkin = skin;
+
+      //   for (String skinName in root['skins'].keys) {
+      //     final dynamic skinMap = root['skins'][skinName];
+      //     final Skin skin = Skin(skinName);
+      //     for (String slotName in skinMap.keys) {
+      //       final int slotIndex = skeletonData.findSlotIndex(slotName);
+      //       if (slotIndex == -1) throw StateError('Slot not found: $slotName');
+      //       final dynamic slotMap = skinMap[slotName];
+      //       for (String entryName in slotMap.keys) {
+      //         final Attachment? attachment = readAttachment(
+      //             slotMap[entryName], skin, slotIndex, entryName, skeletonData);
+      //         if (attachment != null) {
+      //           skin.addAttachment(slotIndex, entryName, attachment);
+      //         }
+      //       }
+      //     }
+      //     skeletonData.skins.add(skin);
+      //     if (skin.name == 'default') skeletonData.defaultSkin = skin;
+      // }
+
       }
     }
 
